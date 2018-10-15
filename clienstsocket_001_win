@@ -1,70 +1,77 @@
-#undef UNICODE
+/*
+Primo esempio di codice in linguaggio C per programmare una socket TCP lato client
+Il codice e' stato composto con finalità didattiche
+Autore: Paolo Mangraviti
+Verrsione 1.0 14 ottobre 2018
+*/
 
-#define WIN32_LEAN_AND_MEAN
 
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdio.h> /* per le funzioni printf() and fprintf() */
+#include <winsocket.h> /* per le funzioni socket(), bind(), connect(), recv() and send() */
+#include <stdlib.h> /* per le funzioni atoi() and exit() */
+#include <string.h> /* per le funzioni memset() */
+#include <unistd.h> /* per le funzioni close() */
+#define RCVBUFSIZE 32 /* dimesione del buffer di ricezione */
 
-// Need to link with Ws2_32.lib
-#pragma comment (lib, "Ws2_32.lib")
-// #pragma comment (lib, "Mswsock.lib"
-#define PROTOPORT 5193 // default protocol port number
-#define QLEN 6 // size of request queue
+/* Funzione per visualizzare sulla console i messaggi di errore */
+void ErrorHandler(char *errorMessage)
+{
+    fprintf(stderr,"%s",errorMessage);
+    exit(1);
+} /* Error handling function */
 
-void ErrorHandler(char *errorMessage) {
-     printf(errorMessage);
-}
-void ClearWinSock() {
-
-    WSACleanup();
-
-}
-
+/* -------------------------------------------------------- */
+/* -------------------------------------------------------- */
+/* Funzione Principale */
 int main(int argc, char *argv[]) {
-    int port;
-    if (argc > 1) {
-       port = atoi(argv[1]); // if argument specified convert argument to binary
-    }
-    else
-        port = PROTOPORT; // use default port number
-    if (port < 0) {
-       printf("bad port number %s \n", argv[1]);
-       return 0;
-    }
     
-
-    WSADATA wsaData;
-    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    int socket_001 = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     
-    if (iResult != 0) {
-        ErrorHandler("Error at WSAStartup()\n");
-        return 0;
-    }
-
-    
-    // CREAZIONE DELLA SOCKET
-    int MySocket;
-    MySocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (MySocket < 0) {
-        ErrorHandler("socket creation failed.\n");
-        ClearWinSock();
-        return 0;
-    }
-    // ASSEGNAZIONE DI UN INDIRIZZO ALLA SOCKET
+    if (socket_001 < 0)
+        {
+            ErrorHandler("socket creation failed.\n");
+             return 0;
+        }
+        
+    /* Predisposizione dei dati per il livello 4 TCP e livello 3 IP (iso/osi)
     struct sockaddr_in sad;
-    memset(&sad, 0, sizeof(sad)); // ensures that extra bytes contain 0
     sad.sin_family = AF_INET;
-    sad.sin_addr.s_addr = inet_addr("127.0.0.1");
-    sad.sin_port = htons(port); /* converts values between the host and
-    network byte order Specifically network byte order. Specifically, htons() converts 16 () converts 16-bit quantities bit quantities
-    from host byte order to network byte order. */
-    if (bind(MySocket, (struct sockaddr*) &sad, sizeof(sad)) < 0) {
-        ErrorHandler("bind() failed.\n");
-        closesocket(MySocket);
-        ClearWinSock();
+    sad.sin_addr.s_addr = inet_addr( "127.0.0.1");
+    sad.sin_port = htons((unsigned short)80);
+        
+   if (connect(socket_001, (struct sockaddr *)&sad, sizeof(sad)) < 0) 
+   {
+        ErrorHandler( "Failed to connect.\n");
+        close(socket_001);
         return 0;
     }
+    
+    char* messaggio = "prova";
+    char* messaggioRicevuto = "";
+    int lunghezzaMessaggio = strlen(messaggio);
+    int numeroByteTrasmessi = send(socket_001, messaggio, lunghezzaMessaggio, 0);
+    
+    if (numeroByteTrasmessi != lunghezzaMessaggio)
+        ErrorHandler("Errore di trasmissione.\n");
+        
+    int numeroByteRicevuti = 0;
+    int numeroTotaleByteRicevuti = 0;
+    char buffer[RCVBUFSIZE];
+    
+    int numeroByteAttesi = numeroByteTrasmessi;
+    
+    while (numeroTotaleByteRicevuti < numeroByteAttesi)
+    {
+        numeroByteRicevuti = recv(socket_001,buffer,RCVBUFSIZE-1,0);
+        if (numeroByteRicevuti <= 0)
+            ErrorHandler("Errore di ricezione.\n");
+        else
+            {
+                numeroTotaleByteRicevuti = numeroTotaleByteRicevuti + numeroByteRicevuti;
+                strcat(buffer,messaggioRicevuto);
+            }
+        
+    }
+        
+    close(socket_001);
 }
