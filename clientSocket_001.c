@@ -4,6 +4,8 @@ Il codice e' stato composto con finalità didattiche
 
 Autore: Paolo Mangraviti
 Verrsione 1.0 14 ottobre 2018
+Per sistemi operativi linux/unix like
+
 */
 
 
@@ -39,7 +41,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in sad;
     sad.sin_family = AF_INET;
     sad.sin_addr.s_addr = inet_addr( "127.0.0.1");
-    sad.sin_port = htons((unsigned short)80);
+    sad.sin_port = htons((unsigned short) __specificare numero porta TCP __);
         
    if (connect(socket_001, (struct sockaddr *)&sad, sizeof(sad)) < 0) 
    {
