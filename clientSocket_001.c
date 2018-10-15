@@ -3,11 +3,9 @@ Primo esempio di codice in linguaggio C per programmare una socket TCP lato clie
 Il codice e' stato composto con finalità didattiche
 
 Autore: Paolo Mangraviti
-Verrsione 1.0 14 ottobre 2018
-Per sistemi operativi linux/unix like
+Verrsione 1.0 14 ottobre 2018 - per sistemi operativi linux/unix like
 
 */
-
 
 #include <stdio.h> /* per le funzioni printf() and fprintf() */
 #include <sys/socket.h> /* per le funzioni socket(), bind(), connect(), recv() and send() */
